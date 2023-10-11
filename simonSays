@@ -1,0 +1,221 @@
+const int MAX_LEVEL = 100;
+int sequence[MAX_LEVEL];
+int your_sequence[MAX_LEVEL];
+int level = 1;
+int velocity = 1000;
+
+int buzzerPin = 6;
+int ledGreen = 2;
+int ledRed = 3;
+int ledYellow = 4;
+int ledBlue = 5;
+
+#define NOTE_A4 440
+#define NOTE_B4 494
+#define NOTE_C5 523
+#define NOTE_C6 1047
+#define NOTE_E6 1319
+#define NOTE_G6 1568
+#define NOTE_C7 2093
+
+void setup() {
+  pinMode(A0, INPUT);
+  pinMode(A1, INPUT);
+  pinMode(A2, INPUT);
+  pinMode(A3, INPUT);
+
+  pinMode(ledGreen, OUTPUT);
+  pinMode(ledRed, OUTPUT);
+  pinMode(ledYellow, OUTPUT);
+  pinMode(ledBlue, OUTPUT);
+
+  digitalWrite(ledGreen, LOW);
+  digitalWrite(ledRed, LOW);
+  digitalWrite(ledYellow, LOW);
+  digitalWrite(ledBlue, LOW);
+}
+
+void loop() {
+  if (level == 1)
+    generate_sequence();
+
+  if (digitalRead(A4) == LOW || level != 1) {
+    show_sequence();
+    get_sequence();
+  }
+}
+
+void show_sequence() {
+  digitalWrite(ledGreen, LOW);
+  digitalWrite(ledRed, LOW);
+  digitalWrite(ledYellow, LOW);
+  digitalWrite(ledBlue, LOW);
+
+  for (int i = 0; i < level; i++) {
+    digitalWrite(sequence[i], HIGH);
+    if ( sequence[i] == 2)
+    {
+      tone(buzzerPin, 400, 50);
+    }
+    if ( sequence[i] == 3)
+    {
+      tone(buzzerPin, 300, 50);
+    }
+    if ( sequence[i] == 4)
+    {
+      tone(buzzerPin, 200, 50);
+    }
+    if ( sequence[i] == 5)
+    {
+      tone(buzzerPin, 100, 50);
+    }
+    delay(velocity);
+    digitalWrite(sequence[i], LOW);
+    delay(200);
+  }
+}
+
+void get_sequence() {
+  int flag = 0;
+
+  for (int i = 0; i < level; i++) {
+    flag = 0;
+
+    while (flag == 0) {
+      if (digitalRead(A0) == LOW) {
+        digitalWrite(ledBlue, HIGH);
+        tone(buzzerPin, 100, 50);
+        your_sequence[i] = 5;
+        flag = 1;
+        delay(200);
+        if (your_sequence[i] != sequence[i]) {
+          wrong_sequence();
+          return;
+        }
+        digitalWrite(ledBlue, LOW);
+      }
+
+      if (digitalRead(A1) == LOW) {
+        digitalWrite(ledYellow, HIGH);
+        tone(buzzerPin, 200, 50);
+        your_sequence[i] = 4;
+        flag = 1;
+        delay(200);
+        if (your_sequence[i] != sequence[i]) {
+          wrong_sequence();
+          return;
+        }
+        digitalWrite(ledYellow, LOW);
+      }
+
+      if (digitalRead(A2) == LOW) {
+        digitalWrite(ledRed, HIGH);
+        tone(buzzerPin, 300, 50);
+        your_sequence[i] = 3;
+        flag = 1;
+        delay(200);
+        if (your_sequence[i] != sequence[i]) {
+          wrong_sequence();
+          return;
+        }
+        digitalWrite(ledRed, LOW);
+      }
+
+      if (digitalRead(A3) == LOW) {
+        digitalWrite(ledGreen, HIGH);
+        tone(buzzerPin, 400, 50);
+        your_sequence[i] = 2;
+        flag = 1;
+        delay(200);
+        if (your_sequence[i] != sequence[i]) {
+          wrong_sequence();
+          return;
+        }
+        digitalWrite(ledGreen, LOW);
+      }
+    }
+  }
+  right_sequence();
+}
+
+void generate_sequence() {
+  randomSeed(millis());
+
+  for (int i = 0; i < MAX_LEVEL; i++) {
+    sequence[i] = random(2, 6);
+  }
+}
+
+void wrong_sequence() {
+  for (int i = 0; i < 5; i++) {
+    digitalWrite(ledGreen, HIGH);
+    digitalWrite(ledRed, HIGH);
+    digitalWrite(ledYellow, HIGH);
+    digitalWrite(ledBlue, HIGH);
+    delay(100);
+    digitalWrite(ledGreen, LOW);
+    digitalWrite(ledRed, LOW);
+    digitalWrite(ledYellow, LOW);
+    digitalWrite(ledBlue, LOW);
+    delay(100);
+
+     int melody[] = {
+    NOTE_C5, NOTE_B4, NOTE_A4
+   };
+
+   int noteDuration[] = {
+    300, 300, 600
+   };
+
+   for (int i = 0; i < sizeof(melody) / sizeof(melody[0]); i++) {
+    int noteDurationMillis = 1000 / noteDuration[i];
+    tone(buzzerPin, melody[i], noteDurationMillis);
+    delay(noteDurationMillis + 30); // 30 ms delay between notes for better timing
+   }
+
+  }
+  level = 1;
+  velocity = 1000;
+}
+
+void right_sequence() {
+  digitalWrite(ledGreen, LOW);
+  digitalWrite(ledRed, LOW);
+  digitalWrite(ledYellow, LOW);
+  digitalWrite(ledBlue, LOW);
+  delay(250);
+  
+   int melody[] = {
+    NOTE_C6, NOTE_E6, NOTE_G6, NOTE_C7
+  };
+
+  int noteDuration[] = {
+    200, 200, 200, 400
+  };
+
+  for (int i = 0; i < sizeof(melody) / sizeof(melody[0]); i++) {
+    int noteDurationMillis = 1000 / noteDuration[i];
+    tone(buzzerPin, melody[i], noteDurationMillis);
+    delay(noteDurationMillis + 30);
+  }
+  
+  digitalWrite(ledBlue, HIGH);
+  delay(100); 
+  digitalWrite(ledBlue, LOW);
+  digitalWrite(ledYellow, HIGH);
+  delay(100);  
+  digitalWrite(ledYellow, LOW);
+  digitalWrite(ledRed, HIGH);
+  delay(100);  
+  digitalWrite(ledRed, LOW);
+  digitalWrite(ledGreen, HIGH);
+  delay(100);  
+  digitalWrite(ledGreen, LOW);
+  delay(500);
+
+  if (level < MAX_LEVEL)
+    level++;
+
+  velocity -= 50;
+}
+
